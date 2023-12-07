@@ -1,61 +1,72 @@
-var inputRed = document.getElementById("input-red");
-var inputGreen = document.getElementById("input-green");
-var inputBlue = document.getElementById("input-blue");
-var colorPreview = document.getElementById("color-preview");
-var colorArea = document.getElementById("color-area");
-var generateButton = document.getElementById("generate-button");
+document.addEventListener("DOMContentLoaded", function() {
+  const colorArea = document.getElementById("color-area");
+  const redInput = document.getElementById("red");
+  const greenInput = document.getElementById("green");
+  const blueInput = document.getElementById("blue");
+  const generateBtn = document.getElementById("generate-btn");
+  const colors = document.getElementById("block");
+  const maxBlocks = 15;
+  const masscolors = [];
 
-inputRed.addEventListener("input", updateColorPreview);
-inputGreen.addEventListener("input", updateColorPreview);
-inputBlue.addEventListener("input", updateColorPreview);
+  // Изменить цвет
+  function changeColor() {
+      const red = parseInt(redInput.value) || 0;
+      const green = parseInt(greenInput.value) || 0;
+      const blue = parseInt(blueInput.value) || 0;
 
-generateButton.addEventListener("click", generateBlock);
-
-function updateColorPreview() {
-  var red = parseInt(inputRed.value);
-  var green = parseInt(inputGreen.value);
-  var blue = parseInt(inputBlue.value);
-  colorPreview.style.backgroundColor = "rgb(" + red + "," + green + "," + blue + ")";
-}
-
-function generateBlock() {
-  var red = parseInt(inputRed.value);
-  var green = parseInt(inputGreen.value);
-  var blue = parseInt(inputBlue.value);
-
-  if (!isNaN(red) && !isNaN(green) && !isNaN(blue)) {
-    if (red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255) {
-      var colorBlock = document.createElement("div");
-      colorBlock.className = "color-block";
-      colorBlock.style.backgroundColor = "rgb(" + red + "," + green + "," + blue + ")";
-      colorArea.insertBefore(colorBlock, colorArea.firstChild);
-
-      var colorBlocks = colorArea.getElementsByClassName("color-block");
-      if (colorBlocks.length > 15) {
-        colorArea.removeChild(colorBlocks[colorBlocks.length - 1]);
-      }
-    }
+      colorArea.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
   }
-}
 
-colorArea.addEventListener("click", function(event) {
-  var clickedElement = event.target;
-  if (clickedElement.classList.contains("color-block")) {
-    var bgColor = clickedElement.style.backgroundColor;
-    localStorage.setItem("selectedColor", bgColor);
+  // Добавить прослушиватели событий к входам цветов
+  redInput.addEventListener("input", changeColor);
+  greenInput.addEventListener("input", changeColor);
+  blueInput.addEventListener("input", changeColor);
+
+  generateBtn.addEventListener("click", function() {
+    const red = parseInt(redInput.value);
+    const green = parseInt(greenInput.value);
+    const blue = parseInt(blueInput.value);
+
+    if (isValidRGB(red) && isValidRGB(green) && isValidRGB(blue)) {
+      const color = `rgb(${red}, ${green}, ${blue})`;
+      if (!masscolors.includes(color)) {
+          masscolors.push(color);
+        const colorBlock = document.createElement("div");
+        colorBlock.classList.add("colorBlock");
+        colorBlock.style.backgroundColor = color;
+        colors.appendChild(colorBlock);
+
+        if (colors.children.length > maxBlocks) {
+            colors.removeChild(colors.firstElementChild);
+        }
+      } else {
+        alert("Цвет уже есть в палитре!");
+      }
+    } else {
+      alert("Неверное значение RGB!");
+    }
+});
+
+colors.addEventListener("click", function(event) {
+  const colorBlock = event.target;
+  if (colorBlock.classList.contains("colorBlock")) {
+      const setcolor = colorBlock.style.backgroundColor;
+      localStorage.setItem("selectedColor", setcolor);
   }
 });
 
 document.addEventListener("click", function(event) {
-  var clickedElement = event.target;
-   if (
-    !clickedElement.classList.contains("color-block") &&
-    !clickedElement.classList.contains("color-preview") &&
-    !clickedElement.classList.contains("generate-button")
-  ) {
-    var savedColor = localStorage.getItem("selectedColor");
-    if (savedColor) {
-      clickedElement.style.backgroundColor = savedColor;
-    }
+  const target = event.target;
+  const selectedColor = localStorage.getItem("selectedColor");
+  if(target !== colors && target !== colorArea &&
+    target !==redInput && target !==greenInput &&
+    target !==blueInput && selectedColor)
+  {
+    target.style.backgroundColor = selectedColor;
   }
+});
+
+function isValidRGB(value) {
+    return value >= 0 && value <= 255;
+}
 });
